@@ -350,7 +350,7 @@ export default function CinematicExperience() {
           <div className="flex items-center gap-3 mb-6">
             <span className="w-3 h-3 rounded-full bg-amber-400 animate-ping" />
             <span className="text-xs font-mono uppercase tracking-[0.3em] text-neutral-400">
-              PREPARING CINEMATIC EXPERIENCE
+              LOADING...
             </span>
           </div>
 
