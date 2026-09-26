@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Aarambh</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- =========================================
+         MAIN CINEMATIC EXPERIENCE
+    ========================================== -->
+
+    <main id="experience">
+      <!-- Ambient opening -->
+      <section id="cinematic">
+        <!-- =================================
+                 AMBIENT VIDEO
+            ================================== -->
+
+        <div id="ambient-layer">
+          <video
+            id="ambient-video"
+            src="assets/ambient.mp4"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          ></video>
+        </div>
+
+        <!-- =================================
+                 WALKTHROUGH CANVAS
+            ================================== -->
+
+        <div id="canvas-wrapper">
+          <canvas id="walkthrough-canvas"></canvas>
+        </div>
+
+        <!-- =================================
+                 OPTIONAL INTRO TEXT
+                 Remove if you want pure scene
+            ================================== -->
+
+        <div id="scroll-hint">
+          <div class="scroll-mouse">
+            <span></span>
+          </div>
+
+          <p>Scroll to enter</p>
+        </div>
+      </section>
+
+      <!-- =====================================
+             CONTENT AFTER CINEMATIC WALKTHROUGH
+        ====================================== -->
+
+      <section id="aarambh-content">
+        <div class="content-inner">
+          <p class="eyebrow">WELCOME TO</p>
+
+          <h1>AARAMBH</h1>
+
+          <p class="subtitle">Where your college journey begins.</p>
+
+          <button id="register-btn">Enter Aarambh</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- GSAP -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+    <!-- ScrollTrigger -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+    <!-- Your JS -->
+    <script src="script.js"></script>
+  </body>
+</html>
