@@ -12,20 +12,13 @@ import {
   BookOpen,
   ArrowLeft,
   CheckCircle,
-  Sparkles,
-  Tv,
   ChevronDown,
   ArrowRight,
 } from "lucide-react";
 import FadeContent from "@/components/react-bits/FadeContent";
 import InteractiveTvBackground from "@/components/InteractiveTvBackground";
 
-interface TvDisplayProps {
-  onRegisterClick?: () => void;
-  onInfoClick?: () => void;
-}
-
-export default function TvDisplay({ onInfoClick }: TvDisplayProps) {
+export default function TvDisplay() {
   const [powerState, setPowerState] = useState<"on" | "turning-off" | "off" | "turning-on">("on");
   const isPoweredOn = powerState === "on" || powerState === "turning-on";
   const [currentChannel, setCurrentChannel] = useState<"home" | "register" | "info">("home");

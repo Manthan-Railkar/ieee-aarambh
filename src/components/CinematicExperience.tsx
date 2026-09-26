@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import TvDisplay from "@/components/TvDisplay";
@@ -12,15 +13,7 @@ const getFramePath = (index: number) => {
   return `/assets/frames/frame_${padded}.webp`;
 };
 
-interface CinematicExperienceProps {
-  onRegisterClick: () => void;
-  onInfoClick: () => void;
-}
-
-export default function CinematicExperience({
-  onRegisterClick,
-  onInfoClick,
-}: CinematicExperienceProps) {
+export default function CinematicExperience() {
   const cinematicRef = useRef<HTMLDivElement>(null);
   const ambientLayerRef = useRef<HTMLDivElement>(null);
   const ambientVideoRef = useRef<HTMLVideoElement>(null);
@@ -204,7 +197,7 @@ export default function CinematicExperience({
 
     // Load initial frames with high priority, then remaining
     for (let i = 0; i < FRAME_COUNT; i++) {
-      const img = new Image();
+      const img = new window.Image();
       img.src = getFramePath(i);
       img.onload = updateProgress;
       img.onerror = () => {
@@ -338,13 +331,14 @@ export default function CinematicExperience({
       stateRef.current.rafId = requestAnimationFrame(updateMouseParallax);
     };
 
+    const currentState = stateRef.current;
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    stateRef.current.rafId = requestAnimationFrame(updateMouseParallax);
+    currentState.rafId = requestAnimationFrame(updateMouseParallax);
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(stateRef.current.rafId);
+      cancelAnimationFrame(currentState.rafId);
     };
   }, [resizeCanvas]);
 
@@ -418,9 +412,12 @@ export default function CinematicExperience({
             {/* Ambient glow behind circular IEEE emblem */}
             <div className="relative flex items-center justify-center">
               <div className="absolute inset-0 rounded-full bg-blue-500/25 blur-3xl scale-125 pointer-events-none animate-pulse-glow" />
-              <img
+              <Image
                 src="/assets/ieee_logo.png"
                 alt="IEEE SPIT Logo"
+                width={288}
+                height={288}
+                priority
                 className="relative w-28 h-28 sm:w-44 sm:h-44 md:w-60 md:h-60 lg:w-72 lg:h-72 object-contain drop-shadow-[0_16px_40px_rgba(0,0,0,0.95)]"
               />
             </div>
@@ -482,7 +479,7 @@ export default function CinematicExperience({
           ref={tvContainerRef}
           className="fixed inset-0 z-25 flex items-center justify-center p-1 sm:p-2 md:p-3 lg:p-4 bg-black pointer-events-none opacity-0 will-change-transform"
         >
-          <TvDisplay onRegisterClick={onRegisterClick} onInfoClick={onInfoClick} />
+          <TvDisplay />
         </div>
       </section>
     </div>

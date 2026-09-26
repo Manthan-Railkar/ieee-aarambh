@@ -29,10 +29,7 @@ export default function FadeContent({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!animate) {
-      setIsVisible(false);
-      return;
-    }
+    if (!animate) return;
 
     const element = ref.current;
     if (!element) return;
@@ -69,14 +66,16 @@ export default function FadeContent({
     };
   }, [animate, delay, threshold]);
 
+  const show = animate && isVisible;
+
   return (
     <div
       ref={ref}
       className={className}
       style={{
-        opacity: isVisible ? 1 : initialOpacity,
-        filter: blur ? (isVisible ? "blur(0px)" : "blur(12px)") : "none",
-        transform: isVisible ? "translateY(0) scale(1)" : "translateY(12px) scale(0.96)",
+        opacity: show ? 1 : initialOpacity,
+        filter: blur ? (show ? "blur(0px)" : "blur(12px)") : "none",
+        transform: show ? "translateY(0) scale(1)" : "translateY(12px) scale(0.96)",
         transition: `opacity ${duration}ms ${easing}, filter ${duration}ms ${easing}, transform ${duration}ms ${easing}`,
         willChange: "opacity, filter, transform",
       }}

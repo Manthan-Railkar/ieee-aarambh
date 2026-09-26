@@ -25,12 +25,19 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Aarambh — Where Your College Journey Begins",
+  title: "IEEE - AARAMBH 2026",
   description:
     "Experience the cinematic commencement into campus life. Discover events, orientation schedules, culture, and opportunities at Aarambh.",
-  keywords: ["Aarambh", "College Orientation", "Campus Walkthrough", "Freshers 2026", "Cinematic Experience"],
+  keywords: ["IEEE", "Aarambh", "College Orientation", "Campus Walkthrough", "Freshers 2026", "Cinematic Experience"],
+  icons: {
+    icon: [
+      { url: "/assets/ieee_logo.png", type: "image/png" },
+    ],
+    shortcut: "/assets/ieee_logo.png",
+    apple: "/assets/ieee_logo.png",
+  },
   openGraph: {
-    title: "Aarambh — Where Your College Journey Begins",
+    title: "IEEE - AARAMBH 2026",
     description: "Experience the cinematic commencement into campus life.",
     type: "website",
   },
