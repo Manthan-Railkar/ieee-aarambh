@@ -79,23 +79,25 @@ export async function POST(req: NextRequest) {
       ticketId: `${getBranchPrefix(trimmedBranch)}-${trimmedUid}`,
     });
 
-    // Real-time async sync to Google Sheets (non-blocking)
+    // Real-time sync to Google Sheets (awaited so Vercel serverless does not freeze before completion)
     if (GOOGLE_SHEET_WEBHOOK_URL && !GOOGLE_SHEET_WEBHOOK_URL.includes("PASTE_YOUR_")) {
-      fetch(GOOGLE_SHEET_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketId: registration.ticketId,
-          name: registration.name,
-          uid: registration.uid,
-          branch: registration.branch,
-          division: registration.division,
-          phone: registration.phone,
-          email: registration.email,
-        }),
-      }).catch((err) => {
+      try {
+        await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ticketId: registration.ticketId,
+            name: registration.name,
+            uid: registration.uid,
+            branch: registration.branch,
+            division: registration.division,
+            phone: registration.phone,
+            email: registration.email,
+          }),
+        });
+      } catch (err) {
         console.error("Google Sheets webhook error:", err);
-      });
+      }
     }
 
     return NextResponse.json(
