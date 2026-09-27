@@ -14,9 +14,26 @@ import {
   CheckCircle,
   ChevronDown,
   ArrowRight,
+  Layers,
+  Loader2,
+  AlertCircle,
+  MessageSquare,
+  ExternalLink,
 } from "lucide-react";
 import FadeContent from "@/components/react-bits/FadeContent";
 import InteractiveTvBackground from "@/components/InteractiveTvBackground";
+
+// WhatsApp Group / Community Invite Link
+// Replace this link with your official Aarambh WhatsApp group invite URL:
+export const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/YOUR_AARAMBH_GROUP_LINK";
+
+export const getBranchPrefix = (branch: string): string => {
+  const b = branch.toUpperCase().trim();
+  if (b === "CE" || b.startsWith("CE")) return "CE";
+  if (b === "CSE" || b.includes("COMPUTER SCIENCE")) return "CS";
+  if (b === "EXTC" || b.includes("ELECTRONICS")) return "EE";
+  return "CS";
+};
 
 export default function TvDisplay() {
   const [powerState, setPowerState] = useState<"on" | "turning-off" | "off" | "turning-on">("on");
@@ -28,8 +45,11 @@ export default function TvDisplay() {
   const [name, setName] = useState("");
   const [uid, setUid] = useState("");
   const [branch, setBranch] = useState("CSE");
+  const [division, setDivision] = useState("Div A");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [issuedPassId, setIssuedPassId] = useState("");
 
@@ -148,13 +168,51 @@ export default function TvDisplay() {
     };
   }, [isStaticGlitching]);
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !uid.trim()) return;
+    if (!name.trim() || !uid.trim() || !phone.trim() || !email.trim()) return;
 
-    const generatedId = `SPIT-AAR-${uid.slice(-4) || "2026"}`;
-    setIssuedPassId(generatedId);
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          uid,
+          branch,
+          division,
+          phone,
+          email,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to process registration.");
+      }
+
+      const fallbackPassId = `${getBranchPrefix(branch)}-${uid}`;
+      if (result.data) {
+        setIssuedPassId(result.data.ticketId || fallbackPassId);
+        if (result.data.name) setName(result.data.name);
+        if (result.data.uid) setUid(result.data.uid);
+        if (result.data.branch) setBranch(result.data.branch);
+        if (result.data.division) setDivision(result.data.division);
+      } else {
+        setIssuedPassId(fallbackPassId);
+      }
+      setIsSubmitted(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed. Please check your connection.";
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -407,7 +465,32 @@ export default function TvDisplay() {
                             </div>
                           </div>
 
-                          {/* 4. Phone Number */}
+                          {/* 4. Division (Div A to Div H) */}
+                          <div>
+                            <label className="block text-[10px] sm:text-xs md:text-sm uppercase font-mono tracking-wider text-neutral-400 font-medium mb-1 sm:mb-1.5 md:mb-2">
+                              Division
+                            </label>
+                            <div className="relative">
+                              <Layers className="absolute left-3 sm:left-3.5 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-neutral-500 pointer-events-none" />
+                              <select
+                                value={division}
+                                onChange={(e) => setDivision(e.target.value)}
+                                className="w-full appearance-none rounded-lg sm:rounded-xl md:rounded-2xl border border-white/20 bg-neutral-900/90 py-1.5 sm:py-2.5 md:py-3 lg:py-3.5 pl-9 sm:pl-11 md:pl-12 pr-9 sm:pr-11 md:pr-12 text-xs sm:text-sm md:text-base lg:text-lg text-white focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 cursor-pointer transition-all shadow-inner"
+                              >
+                                <option value="Div A">Div A</option>
+                                <option value="Div B">Div B</option>
+                                <option value="Div C">Div C</option>
+                                <option value="Div D">Div D</option>
+                                <option value="Div E">Div E</option>
+                                <option value="Div F">Div F</option>
+                                <option value="Div G">Div G</option>
+                                <option value="Div H">Div H</option>
+                              </select>
+                              <ChevronDown className="absolute right-3 sm:right-3.5 md:right-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-neutral-400 pointer-events-none" />
+                            </div>
+                          </div>
+
+                          {/* 5. Phone Number */}
                           <div>
                             <label className="block text-[10px] sm:text-xs md:text-sm uppercase font-mono tracking-wider text-neutral-400 font-medium mb-1 sm:mb-1.5 md:mb-2">
                               Phone Number
@@ -425,8 +508,8 @@ export default function TvDisplay() {
                             </div>
                           </div>
 
-                          {/* 5. College Email (@spit.ac.in Placeholder) */}
-                          <div className="sm:col-span-2">
+                          {/* 6. College Email (@spit.ac.in Placeholder) */}
+                          <div>
                             <label className="block text-[10px] sm:text-xs md:text-sm uppercase font-mono tracking-wider text-neutral-400 font-medium mb-1 sm:mb-1.5 md:mb-2">
                               College Email ID
                             </label>
@@ -444,13 +527,28 @@ export default function TvDisplay() {
                           </div>
                         </div>
 
+                        {errorMessage && (
+                          <div className="flex items-center justify-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs sm:text-sm text-red-300">
+                            <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                            <span>{errorMessage}</span>
+                          </div>
+                        )}
+
                         {/* Submit 3D Button */}
                         <div className="pt-2 sm:pt-3 md:pt-4 flex justify-center">
                           <button
                             type="submit"
-                            className="w-full sm:w-auto px-6 sm:px-10 md:px-14 lg:px-16 py-2.5 sm:py-3 md:py-3.5 lg:py-4 rounded-xl md:rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-xs sm:text-sm md:text-base lg:text-lg font-extrabold tracking-wider uppercase shadow-[0_4px_0_#92400e,0_8px_25px_rgba(245,158,11,0.4)] hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#92400e] transition-all cursor-pointer"
+                            disabled={isSubmitting}
+                            className="w-full sm:w-auto px-6 sm:px-10 md:px-14 lg:px-16 py-2.5 sm:py-3 md:py-3.5 lg:py-4 rounded-xl md:rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-xs sm:text-sm md:text-base lg:text-lg font-extrabold tracking-wider uppercase shadow-[0_4px_0_#92400e,0_8px_25px_rgba(245,158,11,0.4)] hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#92400e] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
-                            Confirm Registration & Issue Pass
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                                <span>Confirming Registration...</span>
+                              </>
+                            ) : (
+                              <span>Confirm Registration & Issue Pass</span>
+                            )}
                           </button>
                         </div>
                       </form>
@@ -477,7 +575,7 @@ export default function TvDisplay() {
                               SPIT AARAMBH BADGE • 2026
                             </span>
                             <h4 className="text-base sm:text-xl md:text-2xl font-bold text-white mt-1">{name}</h4>
-                            <p className="text-xs sm:text-sm md:text-base font-mono text-neutral-400 mt-0.5">UID: {uid} • {branch}</p>
+                            <p className="text-xs sm:text-sm md:text-base font-mono text-neutral-400 mt-0.5">UID: {uid} • {branch} ({division})</p>
                           </div>
                           <div className="bg-white/10 px-2.5 sm:px-3.5 py-1 rounded-lg text-[10px] sm:text-xs md:text-sm font-mono text-neutral-200 border border-white/15">
                             {issuedPassId}
@@ -496,9 +594,36 @@ export default function TvDisplay() {
                         </div>
                       </div>
 
+                      {/* WhatsApp Community Invite Action Card */}
+                      <div className="w-full mt-3 sm:mt-4 rounded-xl md:rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 sm:p-4 text-left flex flex-col sm:flex-row items-center justify-between gap-3 backdrop-blur-md">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs sm:text-sm font-bold text-white tracking-wide">
+                              Join Official Aarambh WhatsApp Group
+                            </h5>
+                            <p className="text-[10px] sm:text-xs text-neutral-400">
+                              Connect with peers & receive event schedules, team announcements & alerts.
+                            </p>
+                          </div>
+                        </div>
+
+                        <a
+                          href={WHATSAPP_GROUP_LINK}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 text-black text-xs sm:text-sm font-extrabold uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)] cursor-pointer"
+                        >
+                          <span>Join Group</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+
                       <button
                         onClick={() => switchChannel("home")}
-                        className="mt-3 sm:mt-5 px-5 sm:px-7 md:px-9 py-2 sm:py-2.5 md:py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs sm:text-sm md:text-base font-semibold text-white tracking-wider uppercase transition-all"
+                        className="mt-3 sm:mt-4 px-5 sm:px-7 md:px-9 py-2 sm:py-2.5 md:py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs sm:text-sm md:text-base font-semibold text-white tracking-wider uppercase transition-all cursor-pointer"
                       >
                         Return to Main Broadcast
                       </button>

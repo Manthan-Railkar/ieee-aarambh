@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, CheckCircle, Ticket, User, Mail, BookOpen, Sparkles } from "lucide-react";
+import { X, CheckCircle, Ticket, User, Mail, BookOpen, Sparkles, Loader2, AlertCircle } from "lucide-react";
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -14,21 +14,52 @@ export default function RegistrationModal({ isOpen, onClose }: RegistrationModal
   const [branch, setBranch] = useState("Computer Science & Engineering");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    const randomId = "AAR-" + Math.floor(100000 + Math.random() * 900000);
-    setTicketId(randomId);
-    setIsSubmitted(true);
+    if (!name.trim() || !email.trim()) return;
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, branch }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to register. Please try again.");
+      }
+
+      if (result.data) {
+        if (result.data.ticketId) setTicketId(result.data.ticketId);
+        if (result.data.name) setName(result.data.name);
+        if (result.data.branch) setBranch(result.data.branch);
+      }
+      setIsSubmitted(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setErrorMessage(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
     setIsSubmitted(false);
     setName("");
     setEmail("");
+    setErrorMessage(null);
     onClose();
   };
 
@@ -116,11 +147,26 @@ export default function RegistrationModal({ isOpen, onClose }: RegistrationModal
                 </div>
               </div>
 
+              {errorMessage && (
+                <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="mt-2 w-full rounded-xl bg-white py-3 text-sm font-semibold tracking-wider uppercase text-black hover:bg-neutral-200 transition-all duration-200 hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] active:scale-[0.99]"
+                disabled={isLoading}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 text-sm font-semibold tracking-wider uppercase text-black hover:bg-neutral-200 transition-all duration-200 hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Generate Access Pass
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Saving Registration...</span>
+                  </>
+                ) : (
+                  <span>Generate Access Pass</span>
+                )}
               </button>
             </form>
           </div>
