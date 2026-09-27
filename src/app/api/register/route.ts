@@ -10,6 +10,12 @@ function getBranchPrefix(branch: string): string {
   return "CS";
 }
 
+// Google Sheets Webhook URL (from Google Apps Script deployment)
+// Paste your Web App URL below or set it as GOOGLE_SHEET_WEBHOOK_URL environment variable:
+const GOOGLE_SHEET_WEBHOOK_URL =
+  process.env.GOOGLE_SHEET_WEBHOOK_URL ||
+  "https://script.google.com/macros/s/AKfycbxj0XBw_mgDu6e4f9S92H7LQfWNKMMGCkns87Sx6ptIYRjEKiTrAG9k_osHWxMu8dls/exec";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -72,6 +78,25 @@ export async function POST(req: NextRequest) {
       email: trimmedEmail,
       ticketId: `${getBranchPrefix(trimmedBranch)}-${trimmedUid}`,
     });
+
+    // Real-time async sync to Google Sheets (non-blocking)
+    if (GOOGLE_SHEET_WEBHOOK_URL && !GOOGLE_SHEET_WEBHOOK_URL.includes("PASTE_YOUR_")) {
+      fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticketId: registration.ticketId,
+          name: registration.name,
+          uid: registration.uid,
+          branch: registration.branch,
+          division: registration.division,
+          phone: registration.phone,
+          email: registration.email,
+        }),
+      }).catch((err) => {
+        console.error("Google Sheets webhook error:", err);
+      });
+    }
 
     return NextResponse.json(
       {
