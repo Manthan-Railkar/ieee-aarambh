@@ -24,8 +24,7 @@ import FadeContent from "@/components/react-bits/FadeContent";
 import InteractiveTvBackground from "@/components/InteractiveTvBackground";
 
 // WhatsApp Group / Community Invite Link
-// Replace this link with your official Aarambh WhatsApp group invite URL:
-export const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/YOUR_AARAMBH_GROUP_LINK";
+export const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/INv9HS4vGxiKxCRpyTZQYb";
 
 export const getBranchPrefix = (branch: string): string => {
   const b = branch.toUpperCase().trim();
